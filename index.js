@@ -2,7 +2,7 @@ const express = require("express");
 const app = express();
 const PORT = 5000;
 
-app.use(express.json()); // 💥 Needed to parse JSON bodies
+app.use(express.json());
 
 let users = [
   { id: 1, name: "Arya Stark" },
