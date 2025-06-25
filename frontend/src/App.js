@@ -9,24 +9,71 @@ export default function App() {
   const [name, setName] = useState("");
   const [editingId, setEditingId] = useState(null);
   const [editName, setEditName] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
+  // Fetch all users
   const fetchUsers = async () => {
-    const res = await axios.get(API);
-    setUsers(res.data);
+    try {
+      setLoading(true);
+      const res = await axios.get(API);
+      setUsers(res.data);
+      setError("");
+    } catch (err) {
+      setError("Failed to fetch users");
+    } finally {
+      setLoading(false);
+    }
   };
 
+  // Add new user
   const addUser = async () => {
     if (!name.trim()) return;
-    await axios.post(API, { name });
-    setName("");
-    fetchUsers();
+    try {
+      setLoading(true);
+      await axios.post(API, { name });
+      setName("");
+      setError("");
+      fetchUsers();
+    } catch (err) {
+      setError("Failed to add user");
+    } finally {
+      setLoading(false);
+    }
   };
 
+  // Delete user
   const deleteUser = async (id) => {
-    await axios.delete(`${API}/${id}`);
-    fetchUsers();
+    try {
+      setLoading(true);
+      await axios.delete(`${API}/${id}`);
+      setError("");
+      fetchUsers();
+    } catch (err) {
+      setError("Failed to delete user");
+    } finally {
+      setLoading(false);
+    }
   };
 
+  // Update user
+  const updateUser = async () => {
+    if (!editName.trim()) return;
+    try {
+      setLoading(true);
+      await axios.put(`${API}/${editingId}`, { name: editName });
+      setEditingId(null);
+      setEditName("");
+      setError("");
+      fetchUsers();
+    } catch (err) {
+      setError("Failed to update user");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Initial fetch
   useEffect(() => {
     fetchUsers();
   }, []);
@@ -34,6 +81,9 @@ export default function App() {
   return (
     <div style={{ padding: 20 }}>
       <h1>FullStack Users</h1>
+
+      {loading && <p>Loading...</p>}
+      {error && <p style={{ color: "red" }}>{error}</p>}
 
       <input
         value={name}
@@ -51,17 +101,7 @@ export default function App() {
                   value={editName}
                   onChange={(e) => setEditName(e.target.value)}
                 />
-                <button
-                  onClick={async () => {
-                    await axios.put(`/api/users/${editingId}`, {
-                      name: editName,
-                    });
-                    setEditingId(null);
-                    fetchUsers();
-                  }}
-                >
-                  ✅
-                </button>
+                <button onClick={updateUser}>✅</button>
                 <button onClick={() => setEditingId(null)}>❌</button>
               </>
             ) : (
